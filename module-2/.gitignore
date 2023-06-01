@@ -1,0 +1,6 @@
+artifacts/
+data/
+external_scripts/
+mlruns/
+
+store.db

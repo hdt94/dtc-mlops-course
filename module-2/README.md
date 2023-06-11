@@ -12,7 +12,7 @@ External scripts:
 ## Up and running
 
 Base environment variables:
-- [.gitignore](.gitignore) includes `store.db`, `data/`, `external_scripts/` and `artifacts/`
+- [.gitignore](.gitignore) includes `store.db`, `external_scripts/` and `artifacts/`
 ```bash
 export ARTIFACTS_MODELS_DIR=artifacts
 export BACKEND_STORE_URI=sqlite:///store.db
@@ -22,7 +22,19 @@ export RAW_DATA_DIR=data/raw
 export SCRIPTS_DIR=external_scripts
 ```
 
-Download datasets and external scripts:
+Download datasets:
+- read downloading instructions in [root README](/README.md)
+- `data/` directory is part of [root .gitignore](/.gitignore)
+```
+chmod +x ../download-data.sh
+
+RAW_DATA_DIR="${RAW_DATA_DIR}" \
+VEHICLE_TYPE=green \
+YEAR_MONTH_PAIRS='2021-01 2021-02 2022-01 2022-02 2022-03' \
+../download-data.sh
+```
+
+Download external scripts:
 ```bash
 chmod +x download-files.sh && ./download-files.sh
 ```
@@ -142,4 +154,9 @@ Train and log models using top parameters configs based on hyperparameters tunni
 ```bash
 python3 "${SCRIPTS_DIR}/register_model.py" \
     --data_path "${PREPROCESS_DATA_DIR}"
+```
+
+Remove downloaded files:
+```bash
+rm -r data/
 ```

@@ -29,21 +29,26 @@ python3 module.py --vehicle-type="yellow" --train="2022-01" --eval="2022-02"
 ```
 
 Multiple runs downloading dataframes into local filesystem:
-- `data/` directory is part of [.gitignore](./.gitignore)
+- read downloading instructions in [root README](/README.md)
+- `data/` directory is part of [root .gitignore](/.gitignore)
 ```bash
-BASE_URL=https://d37ci6vzurychx.cloudfront.net
-VEHICLE_TYPE=yellow
+chmod +x ../download-data.sh
 
-wget -P data/ "${BASE_URL}/misc/taxi+_zone_lookup.csv"
-for YEAR_MONTH in 2021-01 2021-02 2022-01 2022-02; do
-    wget -P data/ "${BASE_URL}/trip-data/${VEHICLE_TYPE}_tripdata_${YEAR_MONTH}.parquet"
-done
+RAW_DATA_DIR="./data" \
+VEHICLE_TYPE=yellow \
+YEAR_MONTH_PAIRS='2021-01 2021-02 2022-01 2022-02' \
+../download-data.sh
 
 # using defaults except custom source location
 python3 module.py --source="./data"
 
 # using custom parameters and source location
 python3 module.py --vehicle-type="${VEHICLE_TYPE}" --train="2021-01" --eval="2021-02" --source="./data"
+```
+
+Remove downloaded files:
+```bash
+rm -r data/
 ```
 
 ## Notes

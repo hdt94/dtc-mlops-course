@@ -7,6 +7,7 @@ Index:
 - [Module 1: Introduction](./module-1/)
 - [Module 2: Experiment tracking and model management with MLflow](./module-2/)
 - [Module 3: Orchestration and ML Pipelines with Prefect](./module-3/)
+- [Module 4: Model deployment](./module-4/)
 
 Download Parquet raw source data files:
 - [.gitignore](.gitignore) includes `data/`

@@ -46,7 +46,7 @@ export PREFECT_WORK_POOL=docker-process
 Lift up services:
 - WARNING: config in [docker-compose.yaml](./docker-compose.yaml) is for development and/or prototyping, DO NOT USE IT ON PRODUCTION
 - Prefect containers take 1-2 minutes to fully setup orchestration, check "prefect_deployments" exits with 0 code
-- There are some minors errors on "prefect_server" that are out of the scope of this demo
+- There are some minor errors on "prefect_server" that are out of the scope of this demo
 ```bash
 docker compose --profile prefect up
 ```
@@ -74,8 +74,10 @@ Optionally, install and use Prefect as cli client:
     ```
 - Deploy flows:
     - [.gitignore](.gitignore) contains `.prefect/`
+    - setting PREFECT_API_URL config value creates/updates default profile in `"${PREFECT_HOME}/profiles.toml"`
     ```bash
     export PREFECT_HOME="${PWD}/.prefect"
+    mkdir -p "${PREFECT_HOME}"
     prefect config set PREFECT_API_URL=http://127.0.0.1:${PREFECT_SERVER_HOST_PORT}/api
 
     prefect deployment run build-baseline-main-flow/docker \
@@ -125,7 +127,7 @@ prefect server start --host 0.0.0.0 --port "${CUSTOM_PORT}"
 ```
 
 Lift up services:
-- WARNING: config in [docker-compose.yaml](./docker-compose.yaml) is for development, DO NOT USE IT ON PRODUCTION
+- WARNING: config in [docker-compose.yaml](./docker-compose.yaml) is for development and/or prototyping, DO NOT USE IT ON PRODUCTION
 - database service is required by [batch_process_flow.py](./src/batch_process_flow.py) for exporting metrics and by Grafana service for visualization
 ```bash
 docker compose up

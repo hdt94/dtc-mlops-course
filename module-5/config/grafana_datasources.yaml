@@ -1,0 +1,13 @@
+# https://grafana.com/docs/grafana/latest/datasources/postgres/
+apiVersion: 1
+datasources:
+  - name: PostgreSQL
+    type: postgres
+    access: proxy
+    url: db:5432
+    database: mlops
+    user: postgres
+    secureJsonData:
+      password: 'example'
+    jsonData:
+      sslmode: 'disable'

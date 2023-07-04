@@ -1,0 +1,146 @@
+x-prefect:
+  environment:
+    &env-prefect-server-dependent
+    PREFECT_API_URL: http://prefect_server:4200/api
+    PREFECT_WORK_POOL: "${PREFECT_WORK_POOL:-default-docker-process}"
+
+networks:
+  back:
+  front:
+  prefect:
+
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: mlops
+      POSTGRES_PASSWORD: example
+    networks:
+      - back
+    ports:
+      - 5432:5432
+    restart: on-failure
+    volumes:
+      - ./initdb.d:/docker-entrypoint-initdb.d/
+
+  grafana:
+    image: grafana/grafana:9.5.5-ubuntu
+    ports:
+      - 3000:3000
+    networks:
+      - back
+      - front
+    restart: on-failure
+    volumes:
+      - ./config/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/datasource.yaml:ro
+      - ./config/grafana_dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
+      - ./dashboards:/opt/grafana/dashboards
+
+  prefect_deployments:
+    build:
+      context: ./pipelines/
+      dockerfile: prefect.Dockerfile
+    depends_on:
+      prefect_pool:
+        condition: service_completed_successfully
+    entrypoint:
+      [
+        "/opt/prefect/entrypoint.sh",
+        "bash",
+        "/pipelines/scripts/prefect_deployments.sh"
+      ]
+    environment:
+      <<: *env-prefect-server-dependent
+    networks:
+      - prefect
+    profiles:
+      - prefect
+    restart: on-failure
+
+  prefect_pool:
+    image: prefecthq/prefect:2.10.18-python3.8
+    depends_on:
+      prefect_server:
+        condition: service_healthy
+    entrypoint:
+      [
+        "/opt/prefect/entrypoint.sh",
+        "bash",
+        "/prefect_pool.sh"
+      ]
+    environment:
+      <<: *env-prefect-server-dependent
+    networks:
+      - prefect
+    profiles:
+      - prefect
+    restart: on-failure
+    volumes:
+      - ./pipelines/scripts/prefect_pool.sh:/prefect_pool.sh
+
+  prefect_server:
+    image: prefecthq/prefect:2.10.18-python3.8
+    entrypoint:
+      [
+        "/opt/prefect/entrypoint.sh",
+        "prefect",
+        "server",
+        "start"
+      ]
+    environment:
+      - PREFECT_API_URL=http://127.0.0.1:4200/api
+      - PREFECT_SERVER_API_HOST=0.0.0.0
+    expose:
+      - 4200
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import requests; requests.get('http://localhost:4200').raise_for_status()"
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+    networks:
+      - front
+      - prefect
+    ports:
+      - ${PREFECT_SERVER_HOST_PORT:-4200}:4200
+    profiles:
+      - prefect
+
+  prefect_worker:
+    build:
+      context: ./pipelines/
+      dockerfile: prefect.Dockerfile
+    depends_on:
+      prefect_pool:
+        condition: service_completed_successfully
+    entrypoint:
+      [
+        "/opt/prefect/entrypoint.sh",
+        "bash",
+        "/pipelines/scripts/prefect_worker.sh"
+      ]
+    environment:
+      <<: *env-prefect-server-dependent
+      PGDATABASE: mlops
+      PGHOST: db
+      PGPASSWORD: example
+      PGPORT: 5432
+      PGUSER: postgres
+      VOLUMES_DIR: /volumes
+    networks:
+      - back
+      - prefect
+    profiles:
+      - prefect
+    restart: always
+    volumes:
+      - ./data:/volumes/data
+      - ./models:/volumes/models
+      - ./reports:/volumes/reports

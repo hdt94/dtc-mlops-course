@@ -1,0 +1,8 @@
+[packages]
+evidently = "==0.3.3"
+joblib = "~=1.3"
+pandas = "~=2.0"
+prefect = "~=2.10.18"
+psycopg = {version = "~=3.1", extras = ["binary"]}
+pyarrow = "~=12.0"
+scikit-learn = "~=1.2"
